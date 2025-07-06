@@ -2,6 +2,13 @@ services:
   django-client: 
     container_name: client
     build: . 
+  depends_on:
+    - db
+  ports:
+      - "8000:8000"
+  environment:
+      - DATABASE_URL=postgresql://admin:admin@db:5432/postgres
+      - DJANGO_SETTINGS_MODULE=client.settings
 
   db:
     image: postgres:16
@@ -14,3 +21,53 @@ services:
       - "5432:5432"
     volumes: 
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql  
+
+  microservices_products:
+    build: ./microservices/products
+    container_name: microservices_products
+    environment:
+      - DATABASE_URL=postgresql://admin:admin@db_products:5432/postgres
+    depends_on:
+      - db_products
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./microservices/products:/app
+    depends_on:
+      - db_products
+  
+  db_products:
+    image: postgres:16
+    container_name: db_products
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    volumes: 
+      - ./microservices/products/init_products.sql:/docker-entrypoint-initdb.d/init.sql
+    
+  microservices_warehouse:
+    build: ./microservices/warehouse
+    container_name: microservices_products
+    environment:
+      - DATABASE_URL=postgresql://admin:admin@db_products:5432/postgres
+    depends_on:
+      - db_products
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./microservices/products:/app
+
+  db_warehouse:
+    image: postgres:16
+    container_name: db_warehouse
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: postgres
+    ports:
+      - "5434:5432"
+    volumes: 
+      - ./microservices/warehouse/init_warehouse.sql:/docker-entrypoint-initdb.d/init.sql
