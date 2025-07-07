@@ -1,9 +1,10 @@
-_format_version: '2.1'
+_format_version: '3.0'
 
 services: 
   - name: products
     host: microservices_products
     port: 8001
+    protocol: http 
     routes: 
       - name: products_list
         paths:
@@ -13,7 +14,7 @@ services:
           - POST
       - name: products_detail
         paths:
-          - /api/v1/products/{id}
+          - ~/api/v1/products/[0-9]+
         methods:
           - GET
           - PUT
@@ -22,7 +23,7 @@ services:
           - products
       - name: products_category
         paths:
-          - /api/v1/products/category/{category}
+          - ~/api/v1/products/category/[a-zA-Z]+
         methods:
           - GET
       

@@ -10,5 +10,5 @@ RUN pip install -r requirements.txt
 
 EXPOSE 8001
 
-CMD [ "uvicorn", "app:app", "--port", "8001", "--host", "127.0.0.1", "--reload"]
+CMD [ "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
 

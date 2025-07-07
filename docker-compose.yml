@@ -9,6 +9,8 @@ services:
     environment:
         - DATABASE_URL=postgresql://admin:admin@db:5432/postgres
         - DJANGO_SETTINGS_MODULE=client.settings
+    expose: 
+        - "8888"
 
   db:
     image: postgres:16
@@ -21,6 +23,8 @@ services:
       - "5432:5432"
     volumes: 
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql  
+    expose: 
+      - "5432"
 
   microservices_products:
     build: ./microservices/products
@@ -33,8 +37,10 @@ services:
       - db_products
     environment:
       - DATABASE_URL_PRODUCTS=postgresql://admin:admin@db_products:5433/postgres
-    expose: 
-      - "8001" 
+    expose:
+      - "8001"
+    networks:
+      - api_network
   
   db_products:
     image: postgres:16
@@ -45,21 +51,30 @@ services:
       POSTGRES_DB: postgres
     ports:
       - "5433:5432"
+    expose: 
+      - "5432"
     volumes: 
       - ./microservices/products/init_products.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - api_network
+    
     
     
   microservices_warehouse:
     build: ./microservices/warehouse
-    container_name: microservices_products
+    container_name: microservices_warehouse
     environment:
-      - DATABASE_URL=postgresql://admin:admin@db_products:5432/postgres
+      - DATABASE_URL=postgresql://admin:admin@db_warehouse:5434/postgres
     depends_on:
-      - db_products
+      - db_warehouse
     ports:
       - "8002:8002"
     volumes:
-      - ./microservices/products:/app
+      - ./microservices/warehouse:/app
+    expose: 
+      - "8002"
+    networks:
+      - api_network
     
 
   db_warehouse:
@@ -71,8 +86,12 @@ services:
       POSTGRES_DB: postgres
     ports:
       - "5434:5432"
+    expose: 
+      - "5434"
     volumes: 
       - ./microservices/warehouse/init_warehouse.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - api_network
 
   kong-api_gateway: 
     image: kong:latest
@@ -91,5 +110,15 @@ services:
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
       KONG_ADMIN_ERROR_LOG: /dev/stderr
+    expose: 
+      - "8000"
+      - "8443"
+      - "8008"
+      - "8444"
+    networks:
+      - api_network
 
 
+networks:
+  api_network:
+    driver: bridge
