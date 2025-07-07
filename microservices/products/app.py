@@ -30,13 +30,13 @@ class ProductCreateSerializer(BaseModel):
 def read_root():
     return {"message": "Welcome to the Products API"}
 
-@app.get("/products/", response_model=List[ProductSerializer])
+@app.get("/api/v1/products", response_model=List[ProductSerializer])
 def get_all_products():
     service = ProductService(session)
     products = service.get_all_products() or []
     return products
 
-@app.get("/products/{product_id}", response_model=ProductSerializer)
+@app.get("/api/v1/products/{product_id}", response_model=ProductSerializer)
 def get_product_by_id(product_id: int):
     service = ProductService(session)
     product = service.get_product_by_id(product_id)
@@ -44,13 +44,13 @@ def get_product_by_id(product_id: int):
         raise HTTPException(status_code=404, detail="Not found")
     return product
 
-@app.get("/products/category/{category}", response_model=List[ProductSerializer])
+@app.get("/api/v1/products/category/{category}", response_model=List[ProductSerializer])
 def product_by_category(category: str):
     service = ProductService(session)
     products = service.get_product_by_category(category) or []
     return products
 
-@app.post("/products/", response_model=ProductSerializer)
+@app.post("/api/v1/products", response_model=ProductSerializer)
 def add_product(product_data: ProductCreateSerializer):
     service = ProductService(session)
     # Convert Pydantic model to dict, then to SQLAlchemy model
@@ -58,7 +58,7 @@ def add_product(product_data: ProductCreateSerializer):
     product = service.add_product(Product(**product_dict))
     return product
 
-@app.put("/products/{product_id}", response_model=ProductSerializer)
+@app.put("/api/v1/products/{product_id}", response_model=ProductSerializer)
 def update_product(
     product_id: int, 
     product_data: ProductCreateSerializer, 
@@ -73,7 +73,7 @@ def update_product(
     updated_product = service.update_product(Product(**product_dict))
     return updated_product
 
-@app.delete("/products/{product_id}")
+@app.delete("/api/v1/products/{product_id}")
 def delete_product(product_id: int):
     service = ProductService(session)
     deleted_product = service.delete_product(product_id)
