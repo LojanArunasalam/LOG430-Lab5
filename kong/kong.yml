@@ -8,3 +8,11 @@ services:
     routes:
       - name: products
         paths: ["/products"]
+
+  - name: warehouse
+    host: microservices_warehouse
+    port: 8002
+    protocol: http
+    routes:
+      - name: warehouse
+        paths: ["/warehouse"]

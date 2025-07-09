@@ -63,8 +63,6 @@ services:
   microservices_warehouse:
     build: ./microservices/warehouse
     container_name: microservices_warehouse
-    environment:
-      - DATABASE_URL=postgresql://admin:admin@db_warehouse:5434/postgres
     depends_on:
       - db_warehouse
     ports:
@@ -87,11 +85,44 @@ services:
     ports:
       - "5434:5432"
     expose: 
-      - "5434"
+      - "5432"
     volumes: 
       - ./microservices/warehouse/init_warehouse.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - api_network
+  
+  microservices_users:
+    build: ./microservices/users
+    container_name: microservices_users
+    ports:
+      - "8003:8003" 
+    volumes:
+      - ./microservices/users:/app
+    environment:
+      - DATABASE_URL_CUSTOMERS=postgresql://admin:admin@db_users:5435/postgres
+    depends_on:
+      - db_users
+    expose:
+      - "8003"
+    networks:
+      - api_network
+
+  db_users:
+    image: postgres:16
+    container_name: db_users
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: postgres
+    ports:
+      - "5435:5432"
+    expose: 
+      - "5432"
+    volumes: 
+      - ./microservices/users/init_users.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - api_network
+
 
   kong-api_gateway: 
     image: kong:latest
