@@ -16,3 +16,11 @@ services:
     routes:
       - name: warehouse
         paths: ["/warehouse"]
+
+  - name: users
+    host: microservices_users
+    port: 8003
+    protocol: http
+    routes:
+      - name: users
+        paths: ["/users"]

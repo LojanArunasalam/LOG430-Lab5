@@ -13,11 +13,15 @@ DATABASE_URL_WAREHOUSE = os.getenv("DATABASE_URL_WAREHOUSE")
 engine = create_engine(DATABASE_URL_WAREHOUSE)
 Base = declarative_base()
 
-class Product_Depot(Base):
-    __tablename__ = "products_depot"
+class Store(Base):
+    # Includes the parent house (maison mere)
+    __tablename__ = "stores"
 
     id = Column(Integer, primary_key=True)
-    quantite_depot = Column(Integer)
-    
+    name = Column(String)
     #Relationships
-    product = Column(Integer, nullable=True)
+    stocks = relationship(Stock)
+    sales = relationship(Sale)
+
+    def __str__(self):
+        return f"{self.name} - ID: {self.id}"

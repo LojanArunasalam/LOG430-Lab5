@@ -1,4 +1,4 @@
-## LOG430-Lab2
+## LOG430-Lab5
 
 # Architecture de l'application 
 ![Architecture de l'application](images/image.png)
