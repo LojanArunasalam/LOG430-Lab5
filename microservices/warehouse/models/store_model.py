@@ -14,14 +14,10 @@ engine = create_engine(DATABASE_URL_WAREHOUSE)
 Base = declarative_base()
 
 class Store(Base):
-    # Includes the parent house (maison mere)
     __tablename__ = "stores"
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    #Relationships
-    stocks = relationship(Stock)
-    sales = relationship(Sale)
 
     def __str__(self):
         return f"{self.name} - ID: {self.id}"

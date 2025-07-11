@@ -58,8 +58,6 @@ services:
     networks:
       - api_network
     
-    
-    
   microservices_warehouse:
     build: ./microservices/warehouse
     container_name: microservices_warehouse
@@ -69,6 +67,8 @@ services:
       - "8002:8002"
     volumes:
       - ./microservices/warehouse:/app
+    environment:
+      - DATABASE_URL_WAREHOUSE=postgresql://admin:admin@db_warehouse:5434/postgres
     expose: 
       - "8002"
     networks:
@@ -126,7 +126,6 @@ services:
 
   kong-api_gateway: 
     image: kong:latest
-    container_name: kong
     ports:
       - "8000:8000"
       - "8443:8443"

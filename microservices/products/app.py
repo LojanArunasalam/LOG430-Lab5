@@ -8,7 +8,7 @@ from typing import List
 
 
 app = FastAPI()
-engine = create_engine("postgresql+psycopg2://admin:admin@10.194.32.165:5433/postgres")
+engine = create_engine("postgresql+psycopg2://admin:admin@db_products:5432/postgres")
 Session = sessionmaker(bind=engine)
 session = Session()
 

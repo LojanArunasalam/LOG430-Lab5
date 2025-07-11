@@ -16,8 +16,8 @@ Base = declarative_base()
 class Stock(Base):
     __tablename__ = "stocks"
     id = Column(Integer, primary_key=True)
-    quantite = Column(Integer, primary_key=True)
+    quantite = Column(Integer)
 
     #Relationsips
-    product = Column(Integer, ForeignKey("products.id"))
+    product = Column(Integer, nullable=False)
     store = Column(Integer, ForeignKey("stores.id"))
