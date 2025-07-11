@@ -13,7 +13,7 @@ CREATE TABLE stocks (
 CREATE TABLE products_depot (
     id SERIAL PRIMARY KEY,
     quantite_depot INTEGER,
-    product INTEGER NOT NULLL
+    product INTEGER NOT NULL
 );
 
 INSERT INTO stores (name) VALUES

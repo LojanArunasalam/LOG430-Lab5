@@ -20,4 +20,4 @@ class Stock(Base):
 
     #Relationsips
     product = Column(Integer, nullable=False)
-    store = Column(Integer, ForeignKey("stores.id"))
+    store = Column(Integer, nullable=False)

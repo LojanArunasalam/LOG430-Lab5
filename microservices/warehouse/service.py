@@ -96,6 +96,15 @@ class StockService:
             raise ValueError("Insufficient stock or stock not found")
         return reduced_stock
     
+    def increase_stock(self, product_id, store_id, quantity_to_increase):
+        if quantity_to_increase <= 0:
+            raise ValueError("Quantity to increase must be positive")
+        
+        increased_stock = self.stock_repository.increase_stock(product_id, store_id, quantity_to_increase)
+        if not increased_stock:
+            raise ValueError("Stock not found or insufficient stock")
+        return increased_stock
+    
     def delete_stock(self, stock_id):
         deleted_stock = self.stock_repository.delete_stock(stock_id)
         return deleted_stock
@@ -156,11 +165,20 @@ class ProductDepotService:
         if not reduced_depot:
             raise ValueError("Insufficient depot stock or depot not found")
         return reduced_depot
+
+    def increase_depot_stock(self, product_id, quantity_to_increase):
+        if quantity_to_increase <= 0:
+            raise ValueError("Quantity to reduce must be positive")
+        
+        reduced_depot = self.depot_repository.increase_depot_stock(product_id, quantity_to_increase)
+        if not reduced_depot:
+            raise ValueError("Insufficient depot stock or depot not found")
+        return reduced_depot
     
     def delete_depot_stock(self, depot_id):
         deleted_depot = self.depot_repository.delete_depot_stock(depot_id)
         return deleted_depot
-    
+
     def transfer_to_store(self, product_id, store_id, quantity):
         """Transfer stock from depot to store"""
         if quantity <= 0:
@@ -269,7 +287,7 @@ class WarehouseService:
     def _validate_product_exists(self, product_id):
         """Validate product exists by calling products microservice"""
         try:
-            response = requests.get(f"http://kong:8000/products/api/v1/products/{product_id}")
+            response = requests.get(f"http://kong-api_gateway:8000/products/api/v1/products/{product_id}")
             return response.status_code == 200
         except Exception as e:
             logging.error(f"Failed to validate product {product_id}: {e}")
@@ -278,7 +296,7 @@ class WarehouseService:
     def _get_product_info(self, product_id):
         """Get product information from products microservice"""
         try:
-            response = requests.get(f"http://kong:8000/products/api/v1/products/{product_id}")
+            response = requests.get(f"http://kong-api_gateway:8000/products/api/v1/products/{product_id}")
             if response.status_code == 200:
                 return response.json()
             return {}

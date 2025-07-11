@@ -12,6 +12,7 @@ app = FastAPI(title="Warehouse Management Service")
 engine = create_engine("postgresql+psycopg2://admin:admin@10.194.32.165:5434/postgres")
 Session = sessionmaker(bind=engine)
 
+
 class StoreSerializer(BaseModel):
     id: int
     name: str
@@ -266,7 +267,7 @@ def get_depot_by_product(product: int):
     session = Session()
     try:
         depot_service = ProductDepotService(session)
-        depot = depot_service.get_depot_by_product(product)
+        depot = depot_service.get_depot_by_product_id(product)
         if not depot:
             raise HTTPException(status_code=404, detail="Depot stock not found for this product")
         return depot
