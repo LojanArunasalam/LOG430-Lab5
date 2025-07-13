@@ -24,3 +24,11 @@ services:
     routes:
       - name: users
         paths: ["/users"]
+
+  - name: ecommerce
+    host: microservices_ecommerce
+    port: 8004
+    protocol: http
+    routes:
+      - name: ecommerce
+        paths: ["/ecommerce"]

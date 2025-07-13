@@ -123,6 +123,38 @@ services:
     networks:
       - api_network
 
+  microservices_ecommerce:
+    build: ./microservices/ecommerce
+    container_name: microservices_ecommerce
+    ports:
+      - "8004:8004" 
+    volumes:
+      - ./microservices/ecommerce:/app
+    environment:
+      - DATABASE_URL_CUSTOMERS=postgresql://admin:admin@db_ecommerce:5436/postgres
+    depends_on:
+      - db_ecommerce
+    expose:
+      - "8004"
+    networks:
+      - api_network
+
+  db_ecommerce:
+    image: postgres:16
+    container_name: db_ecommerce
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: postgres
+    ports:
+      - "5436:5432"
+    expose: 
+      - "5432"
+    volumes: 
+      - ./microservices/ecommerce/init_ecommerce.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - api_network
+
 
   kong-api_gateway: 
     image: kong:latest

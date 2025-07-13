@@ -19,9 +19,10 @@ class ItemCart(Base):
     __tablename__ = "item_carts"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, nullable=False)  # Assuming a user_id to identify the cart owner and use microservice for this
-    total_price = Column(Float, default=0.0)
-    store = Column(Integer, nullable=False)
+    quantite = Column(Integer, nullable=False)
+    prix = Column(Float, default=0.0)
+    cart = Column(Integer, nullable=False)
+    product = Column(Integer, nullable=False)
 
     def __str__(self):
-        return f"Cart ID: {self.id}, User ID: {self.user_id}, Total Price: {self.total_price}, Store ID: {self.store}"
+        return f"Cart ID: {self.id}, User ID: {self.user_id}, Store ID: {self.store}"

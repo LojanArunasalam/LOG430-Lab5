@@ -19,8 +19,8 @@ class Cart(Base):
     __tablename__ = "carts"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, nullable=False)  # Assuming a user_id to identify the cart owner and use microservice for this
-    total_price = Column(Float, default=0.0)
+    total = Column(Float, default=0.0)
+    user = Column(Integer, nullable=False)  # Assuming a user_id to identify the cart owner and use microservice for this
     store = Column(Integer, nullable=False)
 
     def __str__(self):
