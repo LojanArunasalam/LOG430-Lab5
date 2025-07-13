@@ -9,6 +9,8 @@ logging = logging.getLogger(__name__)
 class CartRepository:
     def __init__(self, session):
         self.session = session
+        self.session.expire_on_commit = False  # Prevent session from expiring on commit
+
 
     def get_by_id(self, cart_id):
         logging.debug(f"Fetching cart with id {cart_id}")
@@ -239,7 +241,7 @@ class CheckoutRepository:
         if not checkout:
             logging.error(f"Checkout with id {checkout_id} does not exist")
             return None
-        checkout.status = "completed"
+        checkout.current_status = "completed"
         self.session.commit()
         logging.debug(f"Checkout {checkout_id} completed successfully")
         return checkout

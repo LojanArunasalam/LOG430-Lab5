@@ -57,7 +57,6 @@ class CartService:
             
         cart = self.get_or_create_cart(user_id, store_id)
         
-        # 5. Ajouter l'article au panier (adapté au nouveau modèle)
         item = self.item_repository.add_item_to_cart(
             cart_id=cart.id,
             product_id=product_id,
@@ -178,11 +177,8 @@ class CheckoutService:
         checkouts = self.checkout_repository.get_by_user_id(user_id)
         return checkouts
 
-    def initiate_checkout(self, cart_id, user_id):
+    def initiate_checkout(self, cart_id):
         """Initier le processus de checkout avec validation complète"""
-        user_info = self._get_user_info(user_id)
-        if not user_info:
-            raise ValueError(f"Utilisateur {user_id} non trouvé")
         
         cart_data = self.cart_service.get_cart_with_items(cart_id)
         if not cart_data or not cart_data['items']:
@@ -207,28 +203,23 @@ class CheckoutService:
             raise ValueError("Checkout non trouvé")
             
         try:
-            # 1. Valider l'utilisateur avant finalisation
-            if not self._validate_user_exists(checkout.user_id):
-                raise ValueError("Utilisateur non valide")
             
             # 3. Réduire le stock dans le warehouse pour chaque article
             cart_data = self.cart_service.get_cart_with_items(checkout.cart_id)
             cart = cart_data['cart']
             
             for item in cart_data['items']:
-                success = self._reduce_warehouse_stock(item.product_id, cart.store, item.quantite)
+                success = self._reduce_warehouse_stock(item.product, cart.store, item.quantite)
                 if not success:
-                    raise ValueError(f"Échec de réduction du stock pour le produit {item.product_id}")
+                    raise ValueError(f"Échec de réduction du stock pour le produit {item.product}")
             
             # 4. Finaliser le checkout
-            completed_checkout = self.checkout_repository.complete_checkout(
-                checkout_id
-            )
+            completed_checkout = self.checkout_repository.complete_checkout(checkout_id)
             
             # 5. Vider le panier
             self.cart_service.clear_cart(checkout.cart_id)
             
-            logging.info(f"Checkout {checkout_id} complété avec succès pour l'utilisateur {checkout.user_id}")
+            logging.info(f"Checkout {checkout_id} complété avec succès pour le cart {checkout.cart_id}")
             return completed_checkout
             
         except Exception as e:
@@ -244,7 +235,7 @@ class CheckoutService:
         """Valider qu'un article a suffisamment de stock"""
         # Note: On devrait obtenir le store_id du panier
         try:
-            response = requests.get(f"http://localhost:8000//warehouse/api/v1/stocks/product/{item.product_id}")
+            response = requests.get(f"http://localhost:8000/warehouse/api/v1/stocks/product/{item.product_id}")
             if response.status_code == 200:
                 stocks = response.json()
                 total_available = sum(stock['quantite'] for stock in stocks)
@@ -279,10 +270,10 @@ class CheckoutService:
         """Réduire le stock dans le microservice warehouse"""
         try:
             response = requests.post(
-                f"http://microservices_warehouse:8002/api/v1/stocks/reduce",
+                f"http://localhost:8000/warehouse/api/v1/stocks/reduce",
                 params={
-                    "product_id": product_id,
-                    "store_id": store_id,
+                    "product": product_id,
+                    "store": store_id,
                     "quantity": quantity
                 }
             )

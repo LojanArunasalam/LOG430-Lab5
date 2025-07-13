@@ -35,7 +35,7 @@ class ItemCartSerializer(BaseModel):
     
 
 class CartCreateSerializer(BaseModel):
-    user_id: int
+    user: int
     store: int
 
 class AddItemToCartSerializer(BaseModel):
@@ -51,11 +51,9 @@ class UpdateItemSerializer(BaseModel):
 class CheckoutSerializer(BaseModel):
     id: int
     cart_id: int
-    user_id: int
 
 class CheckoutCreateSerializer(BaseModel):
     cart_id: int
-    user_id: int
 
 class CompleteCheckoutSerializer(BaseModel):
     payment_method: str
@@ -148,23 +146,16 @@ def initiate_checkout(checkout_data: CheckoutCreateSerializer):
     checkout_service = CheckoutService(session)
     
     checkout = checkout_service.initiate_checkout(
-        checkout_data.cart_id,
-        checkout_data.user_id,
+        checkout_data.cart_id
     )
     return checkout
 
 @app.post("/api/v1/checkout/{checkout_id}/complete", response_model=CheckoutSerializer)
-def complete_checkout(checkout_id: int, payment_data: CompleteCheckoutSerializer):
-    """Complete checkout and create order"""
+def complete_checkout(checkout_id: int):
     session = Session()
     checkout_service = CheckoutService(session)
     
-    payment_info = {
-        'payment_method': payment_data.payment_method,
-        'payment_reference': payment_data.payment_reference
-    }
-    
-    completed_checkout = checkout_service.complete_checkout(checkout_id, payment_info)
+    completed_checkout = checkout_service.complete_checkout(checkout_id)
     return completed_checkout
 
 @app.get("/api/v1/checkout/{checkout_id}", response_model=CheckoutSerializer)

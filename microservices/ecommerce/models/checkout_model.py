@@ -25,5 +25,5 @@ class Checkout(Base):
     current_status = Column(String(50), nullable=False, default='pending')  # Status of the checkout
     
     def __str__(self):
-        return f"Checkout {self.id} - Cart: {self.cart_id} - Status: {self.status.value}"
+        return f"Checkout {self.id} - Cart: {self.cart_id} - Status: {self.current_status}"
     
