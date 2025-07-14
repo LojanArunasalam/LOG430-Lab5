@@ -4,6 +4,8 @@ from sqlalchemy import select
 from .models import Product, Stock, Sale, LineSale, Store, Product_Depot, engine, logging
 from .controller import MainController
 from .caisse_controller import Caisse
+import requests
+
 
 
 Session = sessionmaker(bind=engine)
@@ -76,7 +78,18 @@ def search_products(request):
 
 def dashboard_logistique(request):
     logging.info("Rendering stock-central page")
-    depots = Product_Depot.get_all_product_depots(session)
+    try:
+        response = requests.get("http://localhost:8000/warehouse/api/v1/depot")
+        if response.status_code == 200:
+            depots = response.json()
+            print(depots)
+            logging.info(f"Récupéré {len(depots)} stocks dépôt du microservice")
+        else:
+            logging.error(f"Erreur récupération stocks dépôt: HTTP {response.status_code}")
+            
+    except Exception as e:
+        logging.error(f"Erreur connexion microservice warehouse: {e}")
+        return None
     return render(request, "stock-central.html", {"depots": depots})
 
 

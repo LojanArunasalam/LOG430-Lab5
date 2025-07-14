@@ -72,7 +72,7 @@ services:
     expose: 
       - "8002"
     networks:
-      - api_network
+      - api_network 
     
 
   db_warehouse:

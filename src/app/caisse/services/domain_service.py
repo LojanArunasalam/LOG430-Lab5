@@ -3,6 +3,7 @@ from ..models import Product, LineSale, Sale, Store, Product_Depot
 from ..repositories.product_repository import ProductRepository
 from ..repositories.sale_repository import SaleRepository
 from ..repositories.stock_repository import StockRepository
+import requests
 
 class DomainService: 
     def __init__(self, session):
@@ -13,22 +14,61 @@ class DomainService:
 
 
     def restock_from_depot(self, product_id, quantity, store_id):
-        stock = self.stock_repository.get_stock_by_product_and_store(self.session, product_id, store_id)
-        product_depot = Product_Depot.get_product_depot_by_product_id(self.session, product_id)
-
-        stock.quantite += quantity
-        if product_depot.quantite_depot - quantity < 0:
-            return Exception("Not enough stock in depot to restock the store")
-        product_depot.quantite_depot -= quantity
-        self.session.commit()
-
+        try:
+            response = requests.post(
+            f"http://localhost:8000/warehouse/api/v1/depot/transfer",
+            json={
+                'product': product_id,
+                'store': store_id,
+                'quantity': quantity
+                }
+            )
+        
+            if response.status_code == 200:
+                return {
+                    'success': True,
+                    **response.json()
+                }
+        except: 
+            logging.error(f"Erreur transfert stock: {e}")
+            return {
+                'success': False,
+                'error': f"Erreur connexion microservice warehouse: {e}"
+            }
     def get_product_with_stocks(self, store_id):
-        products = self.product_repository.get_all_products()
-        stocks = []
-        for product in products: 
-            stock = self.stock_repository.get_stock_by_product_and_store(self.session, product.id, store_id)
-            stocks.append(stock)
-        return zip(products, stocks)
+        
+        # 1. Récupérer tous les produits via microservice products
+        products = self._get_all_products_from_microservice()
+        
+        if not products:
+            logging.warning("Aucun produit récupéré du microservice, utilisation fallback")
+            raise Exception("Aucune produit")
+        
+        # 2. Récupérer stocks par magasin via microservice warehouse
+        stocks = self._get_stocks_by_store_from_microservice(store_id)
+        
+        # 3. Associer produits et stocks
+        products_with_stocks = []
+        for product in products:
+            # Trouver le stock correspondant pour ce produit
+            product_stock = None
+            for stock in stocks:
+                if stock.get('product') == product.get('id'):
+                    product_stock = stock
+                    break
+            
+            # Si pas de stock trouvé, créer un objet stock vide
+            if not product_stock:
+                product_stock = {
+                    'id': None,
+                    'product': product.get('id'),
+                    'store': store_id,
+                    'quantite': 0
+                }
+            
+            products_with_stocks.append((product, product_stock))
+        
+        return products_with_stocks
 
     def performances(self):
         # Generate the total in sales for each stores, and for each stock of the products in each store, indicates whether the stock is sufficient or not.
@@ -67,3 +107,31 @@ class DomainService:
         report["max_quantity"] = max_quantity
 
         return report
+
+    def _get_all_products_from_microservice(self):
+        """Récupérer tous les produits via microservice products"""
+        try:
+            response = requests.get(f"http://localhost:8000/products/api/v1/products")
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logging.error(f"Erreur récupération produits: HTTP {response.status_code}")
+                return None
+        except Exception as e:
+            logging.error(f"Erreur connexion microservice products: {e}")
+            return None
+
+    def _get_stocks_by_store_from_microservice(self, store_id):
+        """Récupérer stocks par magasin via microservice warehouse"""
+        try:
+            response = requests.get(f"http://localhost:8000/warehouse/api/v1/stocks/store/{store_id}")
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logging.error(f"Erreur récupération stocks: HTTP {response.status_code}")
+                return []
+        except Exception as e:
+            logging.error(f"Erreur connexion microservice warehouse: {e}")
+            return []
