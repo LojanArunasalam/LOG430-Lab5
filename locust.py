@@ -6,28 +6,23 @@ class MyUser(HttpUser):
     wait_time = between(1, 5)  # Wait time between tasks
 
     @task
-    def index(self):
-        # Simulate a user visiting the home page
-        self.client.get("/")
-
-    @task
     def products(self):
         # Simulate a user checking the products api
-        self.client.get("/api/v1/products")
+        self.client.get("/products/api/v1/products")
 
+    @task 
+    def product_details(self):
+        # Simulate a user checking details of a specific product
+        product_id = rand.randint(1, 5)  # Assuming product IDs are between 1 and 100
+        self.client.get(f"/products/api/v1/products/{product_id}")
+    
     @task
     def stocks(self):
         # Simulate a user checking the stocks api
         store = rand.choice([1, 2, 3, 4, 5])
-        self.client.get(f"/api/v1/stocks/store/{store}")
+        self.client.get(f"/warehouse/api/v1/stocks/store/{store}")
 
     @task
-    def report(self):
+    def users(self):
         # Simulate a user checking the stocks api
-        store = rand.choice([1, 2, 3, 4, 5])
-        self.client.get(f"/api/v1/report/{store}")
-
-    @task
-    def performances(self):
-        # Simulate a user checking the performances api
-        self.client.get("/api/v1/performances")
+        self.client.get(f"/users/api/v1/customers")

@@ -10,9 +10,9 @@ logging = logging.getLogger(__name__)
 
 
 load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL_ECOMMERCE = os.getenv("DATABASE_URL_ECOMMERCE")
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL_ECOMMERCE)
 Base = declarative_base()
 
 class ItemCart(Base):

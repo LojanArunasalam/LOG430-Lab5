@@ -131,7 +131,7 @@ services:
     volumes:
       - ./microservices/ecommerce:/app
     environment:
-      - DATABASE_URL_CUSTOMERS=postgresql://admin:admin@db_ecommerce:5436/postgres
+      - DATABASE_URL_ECOMMERCE=postgresql://admin:admin@db_ecommerce:5436/postgres
     depends_on:
       - db_ecommerce
     expose:
