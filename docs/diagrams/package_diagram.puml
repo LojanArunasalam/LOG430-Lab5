@@ -2,28 +2,53 @@
 hide circle
 hide members
 top to bottom direction
-title Diagramme de package - Système de point de vente 
+title Diagramme de package - Architecture Microservices
 
-package "Couche Web" {
-    folder "Interface Utilisateur" { 
-        file "templates HTML"
+
+package "kong" {
+    artifact "configuration"
+}
+
+package "src/app" {
+    folder "caisse" {
+       artifact "Controleur"
+       artifact "Modèle"
+       artifact "Vue"
+       folder "Templates"
+       artifact "API" as baseAPI
     }
 }
 
-package "Couche Application" {
-    folder "Controller"
-    folder "Views"
-    folder "Models"
+package "microservices" {
+    package "users" {
+        artifact "API" as api1
+    }
+    
+    package "products" {
+        artifact "API" as api2
+    }
+    package "ecommerce" {
+        artifact "API" as api3
+    }
+    
+    package "warehouse" {
+        artifact "API" as api4
+    }
 }
 
-package "Couche Persistence" {
-    folder "Database"
-}
 
-Controller <-> Views
-Controller <-> Models 
-Models <-> Views
+"Controleur" <--> "Modèle" : utilise
+"Controleur" <--> "Vue" : utilise
+"Vue" --> "Templates" : rend
+"Modèle" <--> "Vue" : données
+"baseAPI" --> "Controleur" : appelle
 
-"Couche Web" --> "Couche Application"
-"Couche Application" --> "Couche Persistence"
+"kong" --> "users" : route /users/
+"kong" --> "products" : route /products/
+"kong" --> "ecommerce" : route /ecommerce/
+"kong" --> "warehouse" : route /warehouse/
+
+"kong" ..> "microservices" : routage dynamique
+"caisse" ..> "kong" : utilise
+
 @enduml

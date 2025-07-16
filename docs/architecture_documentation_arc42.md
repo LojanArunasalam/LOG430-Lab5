@@ -198,6 +198,9 @@ N/A
 
 Lien vers les autres labs
 =========================
-- Lien vers lab0 :  https://github.com/LojanArunasalam/LOG430-Lab0 
+- Lien vers lab0: https://github.com/LojanArunasalam/LOG430-Lab0 
 - Lien vers lab1: https://github.com/LojanArunasalam/LOG430-Lab1 
 - Lien vers lab2: https://github.com/LojanArunasalam/LOG430-Lab2 
+- Lien vers lab3: https://github.com/LojanArunasalam/LOG430-Lab3 
+- Lien vers lab4: https://github.com/LojanArunasalam/LOG430-Lab4 
+- Lien vers lab5: https://github.com/LojanArunasalam/LOG430-Lab5 
