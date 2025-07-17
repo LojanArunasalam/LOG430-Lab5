@@ -17,6 +17,18 @@ Fonctionnalités essentielles:
 - Déclencher un réapprovisionnement 
 - Visualiser les performances des magasins dans un tableau de bord
 
+Voici une liste non-exhaustive d'exigences fonctionnelles et non fonctionnelles de ce système : 
+
+### Exigences fonctionnelles 
+- Le gestionnaire peut visualiser les performances de chaque magasin, soit les chiffres d'affaires par magasin, les alertes de ruptures de stock et les produits en surstock
+- Le gestionnaire peut générer un rapport des ventes par magasin
+- Le gestionnaire et un employé peut consulter le stock central 
+- L'employé peut déclencher un réapprovisionnement pour un produit ayant un stock local petit. 
+
+### Exigences non-fonctionnelles
+- Le système doit être testable avec les tests unitaires et tests d'intégrations.
+- Le système doit être capable de visualiser les modeles domaines majeurs
+- Le système doit être simple (ayant que deux couches), et facile à utiliser et déployer.
 ---------------------
 
 Quality Goals 
@@ -29,6 +41,7 @@ Quality Goals
 | Utilisabilité          | Le système présente une interface claire et simple, et ce, sans erreurs majeurs qui pourrait perturbé l'expérience du client. Les cas d'utilisation sont clairement divisé dans le UI.               |
 | Performance         | Le système doit permettre de repondre aux requetes du browser dans les délais les plus rapides, même quand la charge devient importante.   |
 | Rigidité         | Le système doit pouvoir réagir adéquatement face à des pannes.  |
+| Simplicité | Ne pas overengineer |  
 
 
 Stakeholders
@@ -43,9 +56,24 @@ Architecture Constraints
 ========================
 | Contrainte   | Background ou motivation|
 | ----------- | ------------------------- |
-| Implémentation en Python       | Le projet est developpé en Python et doit rester en Python, sauf à indication contra9ire. |
-| Architecture microservices      | sdf |
-| DDD     | sdf |
+| Implémentation en Python       | Le projet est developpé en Python et doit rester en Python, sauf à indication contraire. |
+| Architecture microservices      | Le projet doit être en architecture microservices pour résoudre les problèmes de scalabilité et de performance identifiés dans l'architecture monolithique. Cette contrainte impose une séparation claire des domaines métiers et l'utilisation d'un API Gateway pour la communication inter-services. |
+| DDD     | Le projet doit appliquer des principes DDD pour structurer les microservices selon les domaines métiers identifiés (Users, Products, Ecommerce, Warehouse). Cette contrainte garantit une séparation logique des responsabilités. |
+
+### Tableau de choix de technologies
+Voici un tableau qui démontre les technologies utilisées dans ce système
+
+| Element | Technologie | Justification |
+| --- | ----------- | -------------- | 
+| Language | Python | Facile à utiliser
+| Web Framework | Django | Framework très populaire permettant l'architecture MVC, et une évolution vers une utilisation d'API
+| ORM | SQLAlchemy | Mécanisme de persistence bien documenté dans Python
+| Base de données | PostgreSQL | Robuste et offre plus de fonctionnalités que SQLite et n'est pas en local
+| Conteneurisation | Docker | Conteneuriser l'application, pour pouvoir la rouler dans la VM de production
+| CI/CD | Github Actions | Automatiser le processus de test et déploiement après des changements effectués dans le code
+| API application | Django REST framework | Robuste et y déjà compris dans l'écosystème, donc intégration facile.  
+| API microservices | FastAPI | Développement ultra rapide et documentation Swagger générée automatiquement
+| API Gateway + Load Balancer | Kong | Effectue facilement le load balancing et le routage dynamique vers les microservices.  
 
 System Scope and Context
 ========================
@@ -62,21 +90,28 @@ Business Context
 Technical Context
 -----------------
 
-*Mapping Input/Output to Channels*
 | Channels  | Input - Output |
 | ----------- | ------------------------- |
 | Browser      | Reçoit en input des requêtes HTTP venant des utilisateurs et effectue le rendering des HTML en conséquence.  |
-| Web Server       | Reçoit en input les requêtes HTTP du browser et exécute des requêtes vers la base de données|
-| PostgreSQL     |  Reçoit en input les requêtes en TCP/IP et output les données|
+| Kong API Gateway       | Reçoit des requêtes HTTPS/REST du client et route dynamiquement vers les microservices appropriés. Effectue le load balancing et la gestion de trafic.|
+| FastAPI Microservices     |  Chaque service (Users, Products, Ecommerce, Warehouse) reçoit des requêtes HTTP/REST de Kong et retourne des réponses JSON. Communication inter-services via HTTP. |
+| PostgreSQL Databases     |  Chaque microservice a sa propre base PostgreSQL. Reçoit des requêtes SQL via ORM (SQLAlchemy) et retourne les données persistées. |
+| Django Application     |  Reçoit des requêtes HTTP directes du browser et consomme les APIs des microservices via Kong.|
+| Prometheus     |  Collecte les métriques de performance de Kong et des microservices via HTTP endpoints (/metrics). |
+| Grafana     |  Se connecte à Prometheus pour visualiser les métriques et créer des dashboards de monitoring. |
+
 
 Solution Strategy
 =================
+Voici les stratégies implementées afin de respecter chacune des attributs de qualité: 
 
 | Attributs de qualité   | Approche pour atteindre cette qualité |
 | -----------------------| -------------------------------------------------- |
-| Maintenabilité         | Utilisation d'une architecture 3-tier pour séparer les responsabitlités. Facilite la compréhension du système |
-| Évolutivitité            |Utilisation d'une architecture 3-tiers permet aux couches d'évoluer, et peut évoluer vers une architecture n-tiers|
-| Utilisabilité          | Interface utilisateur simple avec les cas d'utilisations sur une page différente|
+| Maintenabilité         | Utilisation d'une architecture microservices pour séparer les responsabitlités. Facilite la compréhension du système et facilite la maintenance car les services sont devenus indépendants|
+| Évolutivitité            |Utilisation d'une architecture microservices permet à une scalabilité horizontale et l'ajout d'autres services est facilement intégrable |
+| Utilisabilité          | Interface utilisateur simple avec les cas d'utilisations sur une page différente |
+| Performance         | Kong permet de moins surcharger les APIs, donc une latence moindre.   |
+| Rigidité         | Implémentation de load balancing + API gateway afin de router les différentes requêtes et permet aux services d'être fonctionnel même dans le cas d'une panne sur une service.  |
 | Simplicité         | Limiter la complexité technique: ne pas overengineer
 
 Building Block View
@@ -84,8 +119,6 @@ Building Block View
 
 
 **Level 1**
-
-
 
 Ce diagramme de composant illustre l'architecture hybride du système avec la coexistence de l'application Django et les nouveaux microservices. En effet, ce diagramme est le vue d'ensemble du système avec description des blocs de construction principaux.
 
@@ -106,43 +139,6 @@ N/A
 **Level 3** zooms into selected building blocks of level 2, and so on.
 
 N/A
-
-Whitebox Overall System
------------------------
-
-| **Nom (boîtes noires)**             | **Responsabilité**                           |
-| -------------------- | -------------------------------------------- |
-| Interface Utilisateur         |  Afficher les templates HTML et interagir avec l'utilisateur                              |
-| Views.py          |  Rendering de l'HTML                             |
-| controller.py          |  Couche logique pour les besoins métiers                              |
-| models.py          | Représentent les entités domaines                             |
-| Base de données          |  Persistent les données                              |
-
-
-### Interface Utilisateur 
-
-- But: Permet l'interaction entre le client et le système 
-- Interface: HTTP - Il doit être réactive et facile à utiliser 
-
-### views.py
-
-- But: Permet de rediriger les requêtes HTTP vers les rendering appropriés
-- Interface: HTTP - Fonctions pythons - Il doit être mince
-
-### controller.py
-
-- But: Effectue la logique pour atteindre les besoins métiers, les uses cases. 
-- Interface: Fonctions pythons - Il doit être robuste
-
-### models.py
-
-- But: Représentent les entités métiers 
-- Interface: Class python - Il doit garantir l'intégrité des données
-
-### Base de données
-
-- But: Stockent les données
-- Interface: Requêtes SQL via ORM - Il doit respecter les principes ACID
 
 Runtime View 
 ============
