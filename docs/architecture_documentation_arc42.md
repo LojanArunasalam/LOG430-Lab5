@@ -24,6 +24,7 @@ Voici une liste non-exhaustive d'exigences fonctionnelles et non fonctionnelles 
 - Le gestionnaire peut générer un rapport des ventes par magasin
 - Le gestionnaire et un employé peut consulter le stock central 
 - L'employé peut déclencher un réapprovisionnement pour un produit ayant un stock local petit. 
+- Un utilisateur peut commander un produit via la caisse ou avec la gestion ecommerce
 
 ### Exigences non-fonctionnelles
 - Le système doit être testable avec les tests unitaires et tests d'intégrations.
@@ -85,7 +86,6 @@ Business Context
 | ----------- | ------------------------- |
 | Employé magasin      | Un employé peut effectuer une recherche de produit, ou acheter un produit. Également, si le stock d'un produit en local est proche de finir, il peut déclencher un réapprovisionnement. Une communication entre ces deux parties est donc requise. |
 | Gestionnaire       |  Un gestionnaire peut effectuer une demande de rapport de ventes pour chaque magasin. Également, il peut visualiser les performances des magasins. Une communication entre ces deux parties est donc requise.
-| Base de données      |  Le système persiste les données effectués par les requêtes des utilisateurs
 
 Technical Context
 -----------------
@@ -175,6 +175,7 @@ L'infrastructure comprend :
 - Ancienne Application Django qui effectue des requêtes vers les nouvelles services.
 - Stack de monitoring avec Prometheus et Grafana pour l'observabilité
 - Scalabilité horizontale illustrée par les instances multiples du service Warehouse
+
 ![Diagramme de déploiement](images/deployment_diagram.png)
 
 
